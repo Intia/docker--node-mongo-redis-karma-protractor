@@ -59,7 +59,8 @@ RUN         export CHROME_BIN=/usr/bin/google-chrome
 # WEBDRIVER
 RUN         webdriver-manager update
 
-# Start MongoDB
-CMD mongod --fork -f /etc/mongodb.conf \
- && redis-server /etc/redis/redis.conf \
- && bash
+## Start MongoDB
+#RUN mongod -f /etc/mongod.conf &
+#
+## Start Redis
+#RUN redis-servier -f /etc/redis/redis.conf &
