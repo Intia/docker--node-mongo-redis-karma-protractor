@@ -16,6 +16,11 @@ RUN apt-get update
 RUN apt-get install -y mongodb-org
 #EXPOSE      27017:27017
 
+
+# UNZIP
+RUN apt-get install -y zip unzip
+
+
 # GRUNT
 RUN         npm install -g grunt
 RUN         npm install -g grunt-cli
@@ -43,10 +48,7 @@ RUN \
     \
     \
     echo "===> clean up..."  && \
-    rm -rf /var/cache/oracle-jdk8-installer  && \
-    apt-get clean  && \
-    rm -rf /var/lib/apt/lists/*
-
+    rm -rf /var/cache/oracle-jdk8-installer
 
 # CHROME
 RUN         set -xe
@@ -56,11 +58,31 @@ RUN         apt-get update -yqqq
 RUN         apt-get install -y google-chrome-stable
 RUN         export CHROME_BIN=/usr/bin/google-chrome
 
-# WEBDRIVER
-RUN         webdriver-manager update
+#CLEAN
+RUN apt-get clean  && \
+    rm -rf /var/lib/apt/lists/*
 
-## Start MongoDB
-#RUN mongod -f /etc/mongod.conf &
-#
-## Start Redis
-#RUN redis-servier -f /etc/redis/redis.conf &
+
+# CHROMEDRIVER 2.31
+#RUN set -e  && \
+#    CACHED_DOWNLOAD="${HOME}/cache/chromedriver_linux64_2.31.zip"  && \
+#    mkdir ${HOME}/cache/ || 0  && \
+#    rm -rf "${HOME}/bin/chromedriver"  && \
+#    wget --continue --output-document "${CACHED_DOWNLOAD}" "http://chromedriver.storage.googleapis.com/2.31/chromedriver_linux64.zip"  && \
+#    unzip -o "${CACHED_DOWNLOAD}" -d "${HOME}/bin"
+
+RUN CHROMEDRIVER_VERSION=2.31 && \
+    mkdir -p /opt/chromedriver-$CHROMEDRIVER_VERSION && \
+    curl -sS -o /tmp/chromedriver_linux64.zip http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
+    unzip -qq /tmp/chromedriver_linux64.zip -d /opt/chromedriver-$CHROMEDRIVER_VERSION && \
+    rm /tmp/chromedriver_linux64.zip && \
+    chmod +x /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver && \
+    ln -fs /opt/chromedriver-$CHROMEDRIVER_VERSION/chromedriver /usr/local/bin/chromedriver
+
+
+# WEBDRIVER
+RUN webdriver-manager clean
+
+#Fail to update webdriver
+#RUN webdriver-manager update
+#RUN webdriver-manager update --versions.chrome=${CHROMEDRIVER_VERSION}
